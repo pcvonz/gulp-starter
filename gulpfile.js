@@ -10,7 +10,7 @@ var imagemin = require('gulp-imagemin');
 //https://css-tricks.com/gulp-for-beginners/
 
 gulp.task('nunjucks', function () {
-    gulp.src('templates/**.html')
+    gulp.src('templates/*.html')
         .pipe(nunjucks.compile({name: 'Test'}))
         .pipe(gulp.dest('public'))
         .pipe(browserSync.reload({
@@ -22,19 +22,15 @@ gulp.task('nunjucks', function () {
 //Function to optimize images (not really utilized)
 gulp.task('images', function() {
     return gulp.src('source/images/**/*.+(png|jpg|gif|svg)')
-           .pipe(imagemin())
-           .pipe(gulp.dest('public/images'))
-});
+                                       .pipe(imagemin())
+                                       .pipe(gulp.dest('public/images'))
 
+});
 gulp.task('js', function() {
     return gulp.src('source/js/**/*.js')
                .pipe(gulp.dest('public/js'))
 });
 
-gulp.task('fonts', function() {
-    return gulp.src('source/fonts/**/*.ttf')
-          .pipe(gulp.dest('public/fonts'))
-});
 gulp.task('sass', function(){
     return gulp.src('source/style.scss')
         .pipe(sass({
@@ -49,7 +45,7 @@ gulp.task('sass', function(){
 
 gulp.task('browserSync', function() {
     browserSync.init({
-        browser: ["firefox"],
+        browser: "firefox",
         server: {
             baseDir: 'public'
         }
@@ -61,9 +57,9 @@ gulp.task('browserSync', function() {
 //We put browser sync in an array as the second argument
 //that means that we want to run the browser sync task first
 //and then watch for file changers
-gulp.task('watch', ['fonts', 'nunjucks', 'sass', 'images', 'js', 'browserSync'], function() {
+gulp.task('watch', ['nunjucks', 'sass', 'images', 'js', 'browserSync'], function() {
     gulp.watch('source/scss/**/*.scss', ['sass']);
     gulp.watch('templates/**/*.html', ['nunjucks']);
     gulp.watch('source/js/**/*.js', ['js', browserSync.reload]);
-    gulp.watch('source/images/**/*.+(png|jpg|gif|svg)', browserSync.reload);
+    gulp.watch('source/images/**/*.+(png|jpg|gif|svg)', ['images', browserSync.reload]);
 });
