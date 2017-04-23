@@ -3,6 +3,7 @@ var sass = require('gulp-sass');
 var browserSync = require('browser-sync').create();
 var nunjucks = require('gulp-nunjucks');
 var imagemin = require('gulp-imagemin');
+var browserify = require('gulp-browserify');
 
 
 //TODO:
@@ -27,7 +28,11 @@ gulp.task('images', function() {
 
 });
 gulp.task('js', function() {
-    return gulp.src('source/js/**/*.js')
+    return gulp.src('source/js/app.js')
+               .pipe(browserify({
+                insertGlobals: true,
+                debug : !gulp.env.production
+               }))
                .pipe(gulp.dest('public/js'))
 });
 
