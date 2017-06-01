@@ -3,7 +3,12 @@ var sass = require('gulp-sass');
 var browserSync = require('browser-sync').create();
 var nunjucks = require('gulp-nunjucks');
 var imagemin = require('gulp-imagemin');
-var browserify = require('gulp-browserify');
+var browserify = require('browserify');
+var sourcemaps = require('gulp-sourcemaps');
+var cache = require('gulp-cache');
+var uglify = require('gulp-minify');
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
 
 
 //TODO:
@@ -22,11 +27,12 @@ gulp.task('nunjucks', function () {
 
 //Function to optimize images (not really utilized)
 gulp.task('images', function() {
-    return gulp.src('source/images/**/*.+(png|jpg|gif|svg)')
-                                       .pipe(imagemin())
+    return gulp.src('source/images/**/*.+(png|jpg|gif)')
+                                       .pipe(cache(imagemin()))
                                        .pipe(gulp.dest('public/images'))
 
 });
+
 gulp.task('js', function() {
     return gulp.src('source/js/app.js')
                .pipe(browserify({
@@ -35,19 +41,37 @@ gulp.task('js', function() {
                }))
                .pipe(gulp.dest('public/js'))
 });
-
+gulp.task('js', function() {
+  browserify({
+    entries: './source/js/app.js',
+    debug: true
+  })
+  .bundle()
+  .pipe(source('app.js'))
+  .pipe(buffer())
+  .pipe(uglify({
+     ext:{
+        src:'app.js',
+        min:'.js'
+        },
+        exclude: ['tasks'],
+        ignoreFiles: ['.combo.js', '-min.js']
+}))
+  .pipe(gulp.dest('./public/js'));
+});
 gulp.task('sass', function(){
     return gulp.src('source/style.scss')
+        .pipe(sourcemaps.init())
         .pipe(sass({
             outputStyle: 'compressed',
-            includePaths: ['node_modules/susy/sass', 'node_modules/breakpoint-sass/stylesheets']
+            includePaths: [require('node-normalize-scss').includePaths,  'node_modules/susy/sass', 'node_modules/susy/sass', 'node_modules/breakpoint-sass/stylesheets']
         }).on('error', sass.logError))
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('public/css/'))
         .pipe(browserSync.reload({
             stream: true
             }))
 });
-
 gulp.task('browserSync', function() {
     browserSync.init({
         browser: "firefox",
